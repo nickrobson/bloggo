@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div class="posts">
+        {% if post %}
+            <div class="post">
+                <div class="row">
+                    <h2 class="title">{{ post.title }}</h2>
+                    <h5 class="author">by {{ post.get_display_name() }}</h5>
+                </div>
+                <div class="row content">
+                    {{ post.html|safe }}
+                </div>
+            </div>
+        {% else %}
+            <div class="warning callout">
+                <em>There is no post with ID of {{ postid }}!</em>
+                <br>
+                <a href="{{ url_for('show_all') }}"><em>Return Home</em></a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

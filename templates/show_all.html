@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div class="posts">
+        {% for post in posts %}
+            <div class="post">
+                <div class="row">
+                    <h2 class="title">{{ post.title }}</h2>
+                    <h5 class="author">by {{ post.get_display_name() }}</h5>
+                </div>
+                <div class="row content">
+                    {{ post.html|safe }}
+                </div>
+                <div class="row link-to-full">
+                    <a href="{{ url_for('show_post', postid=post.i) }}">See full post</a>
+                </div>
+            </div>
+        {% else %}
+            <div class="warning callout">
+                <em>It looks like there are no posts!</em>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

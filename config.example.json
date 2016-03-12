@@ -1,0 +1,10 @@
+{
+    "name": "Bloggo",
+    "auth": [
+        {
+            "username": "username",
+            "password": "password",
+            "display": "my display name"
+        }
+    ]
+}
