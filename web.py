@@ -9,7 +9,7 @@ import posts
 from flask import Flask, request, session, g, redirect, url_for, abort, \
                     render_template, flash
 
-app = Flask(__name__)
+app = Flask('bloggo')
 
 with open('config.json', 'r') as f:
     app.config.update(json.loads(f.read()))
@@ -92,4 +92,4 @@ with open('secret', 'r') as f:
 auth.init(app.config)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(port=80)

@@ -3,6 +3,9 @@
 /next_id
 /config.json
 
+# venv
+/venv/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
