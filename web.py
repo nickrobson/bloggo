@@ -92,7 +92,7 @@ def logout():
     return redirect(url_for('show_all'))
 
 
-if os.path.isfile('secret'):
+if not os.path.isfile('secret'):
     app.secret_key = os.urandom(24)
     with open('secret', 'w+') as f:
         f.write(repr(app.secret_key))
