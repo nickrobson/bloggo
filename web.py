@@ -3,6 +3,7 @@
 from datetime import datetime as date
 import json
 import os
+import sys
 import markdown2
 import auth
 import posts
@@ -11,9 +12,14 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
 
 app = Flask('bloggo')
 
+if not os.path.isfile('config.json..'):
+    print '############################'
+    print '### Missing config.json! ###'
+    print '############################'
+    sys.exit(1)
+
 with open('config.json', 'r') as f:
     app.config.update(json.loads(f.read()))
-
 
 @app.route('/')
 def show_all():
@@ -86,8 +92,13 @@ def logout():
     return redirect(url_for('show_all'))
 
 
-with open('secret', 'r') as f:
-    app.secret_key = eval(f.read())
+if os.path.isfile('secret'):
+    app.secret_key = os.urandom(24)
+    with open('secret', 'w+') as f:
+        f.write(repr(app.secret_key))
+else:
+    with open('secret', 'r') as f:
+        app.secret_key = eval(f.read())
 
 auth.init(app.config)
 
