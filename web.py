@@ -12,7 +12,7 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
 
 app = Flask('bloggo')
 
-if not os.path.isfile('config.json..'):
+if not os.path.isfile('config.json'):
     print '############################'
     print '### Missing config.json! ###'
     print '############################'
