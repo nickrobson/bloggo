@@ -1,10 +1,14 @@
 Flask==0.10.1
+flask-heroku==0.1.9
 Flask-SQLAlchemy==2.1
 gunicorn==19.4.5
 itsdangerous==0.24
 Jinja2==2.8
 markdown2==2.3.0
 MarkupSafe==0.23
+passlib==1.6.5
 psycopg2==2.6.1
+six==1.10.0
 SQLAlchemy==1.0.12
+SQLAlchemy-Utils==0.31.6
 Werkzeug==0.11.4
