@@ -4,26 +4,19 @@ from datetime import datetime as date
 import json
 import os
 import sys
-import markdown2
-import auth
-import posts
 from flask import Flask, request, session, g, redirect, url_for, abort, \
                     render_template, flash
+from flask.ext.heroku import Heroku
 
 app = Flask('bloggo')
+heroku = Heroku(app)
+app.config['name'] = os.environ.get('BLOGGO_NAME', 'bloggo')
 
-if not os.path.isfile('config.json'):
-    print '############################'
-    print '### Missing config.json! ###'
-    print '############################'
-    sys.exit(1)
-
-with open('config.json', 'r') as f:
-    app.config.update(json.loads(f.read()))
+import db
 
 @app.route('/')
 def show_all():
-    all_posts = posts.list_all_posts()
+    all_posts = db.list_all_posts()
     return render_template('show_all.html',
                            name=app.config['name'], posts=all_posts)
 
@@ -31,10 +24,8 @@ def show_all():
 @app.route('/post/<int:postid>/')
 @app.route('/post/<int:postid>/<path:ignored>')
 def show_post(postid, ignored=None):
-    post = posts.read_of_id(postid)
+    post = db.post_of_id(postid)
     if post:
-        app.logger.debug(request.path)
-        app.logger.debug(post.url)
         if request.path != '/post' + post.url:
             return redirect('/post' + post.url)
     return render_template('show_post.html',
@@ -52,7 +43,7 @@ def create():
     else:
         form = request.form
         if 'title' in form and 'content' in form and 'tags' in form:
-            i = posts.new_post(form['title'], session['username'],
+            i = db.new_post(form['title'], session['username'],
                                form['content'], form['tags'].split(' '),
                                date.today())
             return redirect(url_for('show_post', postid=i))
@@ -100,7 +91,5 @@ else:
     with open('secret', 'r') as f:
         app.secret_key = eval(f.read())
 
-auth.init(app.config)
-
 if __name__ == "__main__":
-    app.run(debug=True, port=80)
+    app.run(debug=True, port=8080)
