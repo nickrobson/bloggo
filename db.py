@@ -21,7 +21,7 @@ class User(db.Model):
     display = db.Column(db.String(120))
 
     def __init__(self, username, password, display):
-        self.username = name
+        self.username = username
         self.password = password
         self.display = display
 
@@ -72,7 +72,9 @@ def get_user_with_pass(username, password):
 
 
 def new_post(title, author, content, tags, date):
-    ctx = Content(i, title, author, content, tags, date)
+    html = markdown.convert(content)
+    url = '/%s' % re.sub('[^a-zA-Z0-9 ]', '', title).replace(' ', '-').lower()
+    ctx = Content(title, author, content, html, tags, date, url)
     db.session.add(ctx)
     db.session.commit()
 

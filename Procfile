@@ -1,1 +1,1 @@
-web: gunicorn web:app --log-file -
+web: foreman run python web.py

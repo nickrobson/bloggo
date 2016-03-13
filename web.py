@@ -44,8 +44,7 @@ def create():
         form = request.form
         if 'title' in form and 'content' in form and 'tags' in form:
             i = db.new_post(form['title'], session['username'],
-                               form['content'], form['tags'].split(' '),
-                               date.today())
+                               form['content'], form['tags'], date.today())
             return redirect(url_for('show_post', postid=i))
         else:
             return redirect(url_for('create'))
