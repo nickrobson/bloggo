@@ -5,7 +5,14 @@
             <div class="post">
                 <div class="row">
                     <h2 class="title">{{ post.title }}</h2>
-                    <h5 class="author">by {{ post.get_display_name() }}</h5>
+                    <div class="row underlined">
+                        <div class="small-6 columns">
+                            <h5>by {{ post.get_display_name() }}</h5>
+                        </div>
+                        <div class="small-6 columns">
+                            <h5 class="text-right">{{ rel_date(post.date) }}</h5>
+                        </div>
+                    </div>
                 </div>
                 <div class="row content">
                     {{ post.html|safe }}

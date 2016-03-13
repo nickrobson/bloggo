@@ -1,7 +1,5 @@
 # bloggo files
-/secret
-/next_id
-/config.json
+/bloggo.db
 
 # venv
 /venv/

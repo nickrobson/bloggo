@@ -8,7 +8,7 @@ body {
     margin-bottom: 30px;
 }
 
-.post .author {
+.post .underlined {
     color: #888;
     border-bottom: solid #eee 1px;
     padding-bottom: 5px;
