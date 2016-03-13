@@ -41,7 +41,7 @@ class Post(object):
         self.author = data[2]
         self.content = data[3]
         self.html = data[4]
-        self.tags = data[5]
+        self.tags = data[5].split(' ')
         self.date = datetime.datetime.strptime(data[6], '%Y-%m-%d %H:%M:%S.%f')
         self.url = data[7]
 
@@ -108,7 +108,7 @@ def new_post(title, author, content, tags, date):
     url = '%s' % re.sub('[^a-zA-Z0-9 ]', '', title).replace(' ', '-').lower()
     co = get_conn()
     cu = co.cursor()
-    post = (title, author, content, html, str(tags), date, url)
+    post = (title, author, content, html, tags, date, url)
     cu.execute('insert into posts (title, author, content, html, tags, date, url) \
                 VALUES (?, ?, ?, ?, ?, ?, ?)', post)
     id = cu.lastrowid
