@@ -14,6 +14,7 @@ months = ['January', 'February', 'March', 'April', 'May', 'June',
 weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
             'Friday', 'Saturday', 'Sunday']
 
+
 def rel_date(date):
     now = date.today()
     dt = now - date
@@ -22,10 +23,10 @@ def rel_date(date):
     time = '%s:%02d %s' % (hour, date.minute, ampm)
     if date.year != now.year:
         return '%s, %s, %d %s %d' % (time, weekdays[date.weekday()], date.day,
-                                 months[date.month - 1], date.year)
+                                     months[date.month - 1], date.year)
     elif dt.days >= 7:
         return '%s, %s, %d %s' % (time, weekdays[date.weekday()], date.day,
-                              months[date.month - 1])
+                                  months[date.month - 1])
     elif dt.days >= 1:
         return '%d days ago' % dt.days
     elif dt.seconds >= 3600:
@@ -73,7 +74,8 @@ def create():
             abort(401)
     else:
         form = request.form
-        if 'title' in form and 'content' in form and 'tags' in form:
+        if 'username' in session and 'title' in form and 'content' \
+           in form and 'tags' in form:
             i = db.new_post(form['title'], session['username'],
                             form['content'], form['tags'], date.today())
             return redirect(url_for('show_post', postid=i))
