@@ -1,5 +1,6 @@
 # bloggo files
 /bloggo.db
+/config.json
 
 # venv
 /venv/
