@@ -6,20 +6,24 @@ from markdown2 import Markdown
 from passlib.hash import pbkdf2_sha512 as pbk
 
 markdown = Markdown(extras=['fenced-code-blocks', 'footnotes', 'tables'])
+db_name = 'bloggo.db'
 
 
 def get_conn():
-    return sqlite3.connect('bloggo.db')
+    return sqlite3.connect(db_name)
 
 
-if not os.path.exists('bloggo.db'):
+if not os.path.exists(db_name):
     co = get_conn()
     cu = co.cursor()
     cu.execute('create table users (id integer primary key, \
                 username text, password text, display text)')
     cu.execute('create table posts (id integer primary key, \
-                title text, author text, content text, html text, \
-                tags text, date text, url text)')
+                title text, author text, content text, \
+                html text, tags text, date text, url text)')
+    cu.execute('create table comments (id integer primary key, \
+                postid integer, author text, content text, \
+                reply_to integer)')
     co.commit()
     co.close()
 
@@ -50,6 +54,16 @@ class Post(object):
         return user.display if user else self.author
 
 
+class Comment(object):
+
+    def __init__(self, data):
+        self.id = data[0]
+        self.postid = data[1]
+        self.author = data[2]
+        self.content = data[3]
+        self.reply_to = data[4]
+
+
 def get_users():
     co = get_conn()
     cu = co.cursor()
@@ -75,10 +89,12 @@ def get_user_with_pass(username, password):
         return None
 
 
-def new_user(username, password, display):
+def new_user(username, password, display, encode=True):
     co = get_conn()
     cu = co.cursor()
-    vals = (username, pbk.encrypt(password), display)
+    if encode:
+        password = pbk.encrypt(password)
+    vals = (username, password, display)
     cu.execute('insert into users (username, password, display) \
                 VALUES (?, ?, ?)', vals)
     id = cu.lastrowid
@@ -87,10 +103,10 @@ def new_user(username, password, display):
     return id
 
 
-def post_of_id(i):
+def get_post(id):
     co = get_conn()
     cu = co.cursor()
-    post = cu.execute('select * from posts where id=?', (i,)).fetchone()
+    post = cu.execute('select * from posts where id=?', (id,)).fetchone()
     co.close()
     return Post(post) if post else None
 
@@ -141,3 +157,21 @@ def delete_post(post):
     co.commit()
     co.close()
     return post
+
+
+def get_comments(postid):
+    co = get_conn()
+    cu = co.cursor()
+    cu.execute('select * from comments where postid=?', (postid,))
+    comments = cu.fetchall()
+    co.close()
+    return map(lambda c: Comment(c), comments)
+
+
+def get_comment(id):
+    co = get_conn()
+    cu = co.cursor()
+    cu.execute('select * from comments where id=?', (id,))
+    comment = cu.fetchone()
+    co.close()
+    return Comment(comment) if comment else None

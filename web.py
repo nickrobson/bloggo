@@ -3,6 +3,7 @@
 from datetime import datetime as date
 import json
 import os
+import re
 import sys
 import db
 from flask import Flask, request, session, g, redirect, url_for, abort, \
@@ -58,7 +59,7 @@ def show_all():
 @app.route('/post/<int:postid>/')
 @app.route('/post/<int:postid>/<path:ignored>')
 def show_post(postid, ignored=None):
-    post = db.post_of_id(postid)
+    post = db.get_post(postid)
     if post:
         if request.path != '/post/%d/%s' % (post.id, post.url):
             return redirect('/post/%d/%s' % (post.id, post.url))
@@ -88,7 +89,7 @@ def create():
 @app.route('/edit/<int:postid>/', methods=['GET', 'POST'])
 @app.route('/edit/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
 def edit(postid, ignored=None):
-    post = db.post_of_id(postid)
+    post = db.get_post(postid)
     if request.method == 'GET':
         if not post or session.get('username') == post.author:
             return render_template('edit.html', name=app.config['name'],
@@ -122,7 +123,7 @@ def edit(postid, ignored=None):
 @app.route('/delete/<int:postid>/', methods=['GET', 'POST'])
 @app.route('/delete/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
 def delete(postid, ignored=None):
-    post = db.post_of_id(postid)
+    post = db.get_post(postid)
     if request.method == 'GET':
         if not post or session.get('username') == post.author:
             return render_template('delete.html', name=app.config['name'],
@@ -137,6 +138,55 @@ def delete(postid, ignored=None):
         return redirect(url_for('show_all'))
 
 
+@app.route('/register/', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        if session.get('username'):
+            return redirect(url_for('show_all'))
+        else:
+            return render_template('register.html', name=app.config['name'],
+                                   username='', display='')
+    else:
+        form = request.form
+        if session.get('username'):
+            return redirect(url_for('show_all'))
+        elif len(form.get('username', '')) and len(form.get('password', '')) \
+                and len(form.get('display', '')):
+            username = form['username']
+            password = form['password']
+            display = form['display']
+
+            if not re.match('^[a-zA-Z]{3,20}$', username):
+                flash('Invalid username. Must be alphabetic with ' +
+                      '3-20 characters.')
+                return render_template('register.html',
+                                       name=app.config['name'],
+                                       username=username, display=display)
+
+            user = db.get_user(username)
+            if user:
+                flash('Username is taken!')
+                return render_template('register.html',
+                                       name=app.config['name'],
+                                       username=username, display=display)
+            else:
+                db.new_user(username, password, display, True)
+                flash('Registered new account: ' + username + ', ' + display)
+                return redirect(url_for('show_all'))
+        else:
+            missing = []
+            if len(form.get('username', '')) == 0:
+                missing.append('username')
+            if len(form.get('password', '')) == 0:
+                missing.append('password')
+            if len(form.get('display', '')) == 0:
+                missing.append('display name')
+            joined = ' & '.join(missing) if len(missing) < 3 else \
+                     '%s, %s & %s' % (missing[0], missing[1], missing[2])
+            flash('Missing ' + joined + '!')
+            return redirect(url_for('register'))
+
+
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -145,9 +195,12 @@ def login():
         else:
             return render_template('login.html', name=app.config['name'])
     else:
-        if 'username' in request.form and 'password' in request.form:
-            username = request.form['username']
-            password = request.form['password']
+        form = request.form
+        if session.get('username'):
+            return redirect(url_for('show_all'))
+        elif len(form.get('username', '')) and len(form.get('password', '')):
+            username = form['username']
+            password = form['password']
 
             user = db.get_user_with_pass(username, password)
             if user:
@@ -168,4 +221,4 @@ def logout():
     return redirect(url_for('show_all'))
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(port=8080)
