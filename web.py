@@ -53,6 +53,7 @@ def parseInt(s, n):
 
 app = Flask('bloggo')
 app.config['name'] = os.environ.get('BLOGGO_NAME', 'bloggo')
+app.config['port'] = parseInt(os.environ.get('BLOGGO_PORT'), 8080)
 app.secret_key = os.environ.get('BLOGGO_SECRET', 'super secret key')
 app.jinja_env.globals.update(rel_date=rel_date)
 
@@ -247,4 +248,4 @@ def logout():
     return redirect(url_for('show_all'))
 
 if __name__ == "__main__":
-    app.run(port=8080)
+    app.run(port=app.config['port'])
