@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block body %}
+    {% if post %}
+        <div class="row posts">
+            <div class="post">
+                <div class="row">
+                    <h2 class="title">{{ post.title }}</h2>
+                    <div class="row underlined">
+                        <div class="small-6 columns">
+                            <h5>by {{ post.get_display_name() }}</h5>
+                        </div>
+                        <div class="small-6 columns">
+                            <h5 class="text-right">{{ rel_date(post.date) }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="row content">
+                    {{ post.html|safe }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <h3 class="text-center">Are you sure you want to delete this post?</h3>
+            <br>
+        </div>
+        <form action="{{ url_for('delete', postid=postid) }}" method="POST">
+            <div class="row">
+                <div class="small-3 columns"><br></div>
+                <input class="button alert small-3 columns" type="submit" value="Yes" />
+                <a class="button small-3 columns" href="{{ url_for('show_post', postid=postid) }}">No</a>
+                <div class="small-3 columns"><br></div>
+            </div>
+        </form>
+    {% else %}
+        <div class="warning callout">
+            <em>There is no post with ID of {{ postid }}!</em>
+            <br>
+            <a href="{{ url_for('show_all') }}"><em>Return Home</em></a>
+        </div>
+    {% endif %}
+{% endblock %}

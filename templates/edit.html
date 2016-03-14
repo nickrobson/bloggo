@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block body %}
+    {% if post %}
+        <form method="POST" action="{{ url_for('edit', postid=postid) }}">
+            <div class="row">
+                <input type="text" name="title" placeholder="Enter title here" value="{{ post.title }}" />
+            </div>
+            <div class="row">
+                <textarea name="content" placeholder="Enter content here" cols="10" rows="10">{{ post.content }}</textarea>
+            </div>
+            <div class="row">
+                <input type="text" name="tags" placeholder="Enter tags here" value="{{ ' '.join(post.tags) }}" />
+            </div>
+            <div class="row">
+                <div class="small-3 columns"><br></div>
+                <input class="button alert small-3 columns" type="submit" value="Edit" />
+                <a class="button small-3 columns" href="{{ url_for('show_post', postid=postid) }}">Cancel</a>
+                <div class="small-3 columns"><br></div>
+            </div>
+        </form>
+    {% else %}
+        <div class="warning callout">
+            <em>There is no post with ID of {{ postid }}!</em>
+            <br>
+            <a href="{{ url_for('show_all') }}"><em>Return Home</em></a>
+        </div>
+    {% endif %}
+{% endblock %}

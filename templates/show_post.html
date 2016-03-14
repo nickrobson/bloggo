@@ -1,21 +1,37 @@
 {% extends "layout.html" %}
 {% block body %}
-    <div class="posts">
+    <div class="row posts">
         {% if post %}
             <div class="post">
                 <div class="row">
-                    <h2 class="title">{{ post.title }}</h2>
-                    <div class="row underlined">
-                        <div class="small-6 columns">
-                            <h5>by {{ post.get_display_name() }}</h5>
+                    {% if session.username %}
+                        <div class="small-10 columns">
+                            <h2 class="title">{{ post.title }}</h2>
                         </div>
-                        <div class="small-6 columns">
-                            <h5 class="text-right">{{ rel_date(post.date) }}</h5>
+                        <div class="small-2 columns">
+                            <h5 class="text-right">
+                                <a href="{{ url_for('edit', postid=postid) }}">Edit</a> |
+                                <a href="{{ url_for('delete', postid=postid) }}">Delete</a>
+                            </h5>
                         </div>
+                    {% else %}
+                        <div class="small-12 columns">
+                            <h2 class="title">{{ post.title }}</h2>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="row underlined">
+                    <div class="small-6 columns">
+                        <h5>by {{ post.get_display_name() }}</h5>
+                    </div>
+                    <div class="small-6 columns">
+                        <h5 class="text-right">{{ rel_date(post.date) }}</h5>
                     </div>
                 </div>
                 <div class="row content">
-                    {{ post.html|safe }}
+                    <div class="small-12 columns">
+                        {{ post.html|safe }}
+                    </div>
                 </div>
             </div>
         {% else %}

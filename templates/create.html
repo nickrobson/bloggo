@@ -11,7 +11,10 @@
             <input type="text" name="tags" placeholder="Enter tags here" />
         </div>
         <div class="row">
-            <input type="submit" value="Create" class="button small-12 columns"></input>
+            <div class="small-3 columns"><br></div>
+            <input class="button small-3 columns" type="submit" value="Create" />
+            <a class="button alert small-3 columns" href="{{ url_for('show_all') }}">Cancel</a>
+            <div class="small-3 columns"><br></div>
         </div>
     </form>
 {% endblock %}

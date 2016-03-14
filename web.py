@@ -31,8 +31,10 @@ def rel_date(date):
         return '%d days ago' % dt.days
     elif dt.seconds >= 3600:
         return '%d hours ago' % (dt.seconds // 3600)
-    elif dt.seconds >= 60:
+    elif dt.seconds >= 120:
         return '%d minutes ago' % (dt.seconds // 60)
+    elif dt.seconds >= 60:
+        return '1 minute ago'
     elif dt.seconds >= 2:
         return '%d seconds ago' % dt.seconds
     elif dt.seconds == 1:
@@ -68,19 +70,71 @@ def show_post(postid, ignored=None):
 @app.route('/create/', methods=['GET', 'POST'])
 def create():
     if request.method == 'GET':
-        if True or session.get('username'):
+        if session.get('username'):
             return render_template('create.html', name=app.config['name'])
         else:
             abort(401)
     else:
         form = request.form
-        if 'username' in session and 'title' in form and \
-           'content' in form and 'tags' in form:
+        if 'title' in form and 'content' in form and 'tags' in form and \
+           len(form['title']) and len(form['content']):
             i = db.new_post(form['title'], session['username'],
                             form['content'], form['tags'], date.today())
             return redirect(url_for('show_post', postid=i))
         else:
-            return redirect(url_for('create'))
+            return redirect(url_for('show_all'))
+
+
+@app.route('/edit/<int:postid>/', methods=['GET', 'POST'])
+@app.route('/edit/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
+def edit(postid, ignored=None):
+    post = db.post_of_id(postid)
+    if request.method == 'GET':
+        if not post or session.get('username') == post.author:
+            return render_template('edit.html', name=app.config['name'],
+                                   post=post, postid=postid)
+        else:
+            abort(401)
+    else:
+        form = request.form
+        if 'title' in form and 'content' in form and 'tags' in form and \
+           session.get('username') == post.author:
+            if len(form['title']) and len(form['content']):
+                db.edit_post(post, form['title'], form['content'],
+                             form['tags'], date.today())
+                return redirect(url_for('show_post', postid=postid))
+            else:
+                missing = []
+                if len(form['title']) == 0:
+                    missing.append('title')
+                if len(form['content']) == 0:
+                    missing.append('content')
+                flash('Missing ' + ' & '.join(missing) + '!')
+                post.title = form['title']
+                post.content = form['content']
+                post.tags = form['tags'].split(' ')
+                return render_template('edit.html', name=app.config['name'],
+                                       post=post, postid=postid)
+        else:
+            return redirect(url_for('show_all'))
+
+
+@app.route('/delete/<int:postid>/', methods=['GET', 'POST'])
+@app.route('/delete/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
+def delete(postid, ignored=None):
+    post = db.post_of_id(postid)
+    if request.method == 'GET':
+        if not post or session.get('username') == post.author:
+            return render_template('delete.html', name=app.config['name'],
+                                   post=post, postid=postid)
+        else:
+            abort(401)
+    else:
+        form = request.form
+        if post and session.get('username') == post.author:
+            db.delete_post(post)
+            flash('Deleted post')
+        return redirect(url_for('show_all'))
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -109,8 +163,8 @@ def login():
 
 @app.route('/logout/')
 def logout():
-    session.pop('username', None)
-    flash('You have been logged out.')
+    if session.pop('username', None):
+        flash('You have been logged out.')
     return redirect(url_for('show_all'))
 
 if __name__ == "__main__":

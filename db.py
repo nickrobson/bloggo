@@ -98,20 +98,46 @@ def post_of_id(i):
 def list_all_posts():
     co = get_conn()
     cu = co.cursor()
-    posts = cu.execute('select * from posts').fetchall()
+    posts = cu.execute('select * from posts order by id desc').fetchall()
     co.close()
     return map(lambda p: Post(p), posts)
 
 
-def new_post(title, author, content, tags, date):
+def to_post_tuple(title, author, content, tags, date):
     html = markdown.convert(content)
     url = '%s' % re.sub('[^a-zA-Z0-9 ]', '', title).replace(' ', '-').lower()
+    return (title, author, content, html, tags, date, url)
+
+
+def new_post(title, author, content, tags, date):
+    post = to_post_tuple(title, author, content, tags, date)
     co = get_conn()
     cu = co.cursor()
-    post = (title, author, content, html, tags, date, url)
     cu.execute('insert into posts (title, author, content, html, tags, date, url) \
                 VALUES (?, ?, ?, ?, ?, ?, ?)', post)
     id = cu.lastrowid
     co.commit()
     co.close()
     return id
+
+
+def edit_post(post, title, content, tags, date):
+    tup = to_post_tuple(title, post.author, content, tags, date)
+    co = get_conn()
+    cu = co.cursor()
+    cu.execute('update posts set title=?, author=?, content=?, html=?, tags=?, \
+               date=?, url=? where id=?', tup + (post.id,))
+    co.commit()
+    post = co.cursor().execute('select * from posts where id=?',
+                               (post.id,)).fetchone()
+    co.close()
+    return post
+
+
+def delete_post(post):
+    co = get_conn()
+    cu = co.cursor()
+    cu.execute('delete from posts where id=?', (post.id,))
+    co.commit()
+    co.close()
+    return post

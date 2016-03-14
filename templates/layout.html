@@ -21,11 +21,13 @@
             </div>
         </div>
     </div>
+    <br><br><br>
     <div class="row">
-        <br><br><br>
         {% for message in get_flashed_messages() %}
-            <div class="warning callout">{{ message }}</div>
+            <div class="row warning callout">{{ message }}</div>
         {% endfor %}
+    </div>
+    <div class="row">
         {% block body %}{% endblock %}
     </div>
 </div>
