@@ -9,8 +9,8 @@ import db
 from flask import Flask, request, session, g, redirect, url_for, abort, \
                     render_template, flash
 
-months = ['January', 'February', 'March', 'April', 'May', 'June',
-          'July', 'August', 'September', 'October', 'November', 'December']
+months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+          'August', 'September', 'October', 'November', 'December']
 
 weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
             'Friday', 'Saturday', 'Sunday']
@@ -42,6 +42,14 @@ def rel_date(date):
         return '1 second ago'
     else:
         return 'Just now'
+
+
+def parseInt(s, n):
+    try:
+        return int(s)
+    except Exception, e:
+        return n
+
 
 app = Flask('bloggo')
 app.config['name'] = os.environ.get('BLOGGO_NAME', 'bloggo')
@@ -136,6 +144,24 @@ def delete(postid, ignored=None):
             db.delete_post(post)
             flash('Deleted post')
         return redirect(url_for('show_all'))
+
+
+@app.route('/comment/', methods=['POST'])
+def comment():
+    form = request.form
+    if form.get('postid') and form.get('author') and form.get('content'):
+        postid = form.get('postid')
+        author = form.get('author')
+        content = form.get('content')
+        post = db.get_post(postid)
+        if post:
+            reply_to = parseInt(form.get('reply_to', 0), 0)
+            db.new_comment(postid, author, content, date.today(), reply_to)
+            return redirect(url_for('show_post', postid=postid))
+        else:
+            abort(404)
+    else:
+        abort(400)
 
 
 @app.route('/register/', methods=['GET', 'POST'])

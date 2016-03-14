@@ -34,6 +34,41 @@
                     </div>
                 </div>
             </div>
+            <div class="comments">
+                <div class="row">
+                    <div class="small-6 columns">
+                        <h4>Comments</h4>
+                    </div>
+                </div>
+                {% for comment in post.get_comments() %}
+                    <div class="comment">
+                        <div class="row underlined">
+                            <div class="small-6 columns">
+                                <h5>from {{ comment.author }}</h5>
+                            </div>
+                            <div class="small-6 columns">
+                                <h5 class="text-right">{{ rel_date(comment.date) }}</h5>
+                            </div>
+                        </div>
+                        <div class="row content">
+                            <div class="small-12 columns">
+                                {{ comment.content }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                <form method="POST" action="{{ url_for('comment') }}">
+                    <input type="hidden" name="postid" value="{{ post.id }}" />
+                    <input type="text" name="author" placeholder="Enter your name here" />
+                    <textarea name="content" placeholder="Enter your comment here" cols="10" rows="5"></textarea>
+
+                    <div class="row">
+                        <div class="small-4 columns"><br></div>
+                        <input class="button small-4 columns" type="submit" value="Create" />
+                        <div class="small-4 columns"><br></div>
+                    </div>
+                </form>
+            </div>
         {% else %}
             <div class="warning callout">
                 <em>There is no post with ID of {{ postid }}!</em>

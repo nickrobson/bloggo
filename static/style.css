@@ -2,19 +2,19 @@ body {
     font-family: 'Raleway', sans-serif;
 }
 
-.post {
+.post, .comment, .comments {
     border: solid #eee 1px;
     padding: 30px 40px 30px 40px;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
-.post .underlined {
+.underlined {
     color: #888;
     border-bottom: solid #eee 1px;
     padding-bottom: 5px;
 }
 
-.post .content {
+.content {
     padding-top: 20px;
     padding-bottom: 5px;
 }
@@ -22,4 +22,8 @@ body {
 .post .link-to-full {
     border-top: solid #eee 1px;
     padding-top: 20px;
+}
+
+.comments {
+    margin-top: 75px;
 }

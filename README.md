@@ -4,14 +4,14 @@
 
 bloggo is an easy-to-use open-source blogging software written in [Python](http://python.org), using [Flask](http://flask.pocoo.org/).
 
-All user and post data is stored in an SQLite database named `bloggo.db`.
+All user, post, and comment data is stored in an SQLite database named `bloggo.db`.
 
 ### Features:
 
 * Markdown for formatting
 * Minimal, easily-navigable frontend
-* User account creation
+* Multiple user accounts
 * Post browsing
 * Post creation by logged-in users
-* Post editing by author
-* Post deletion by author
+* Post editing and deleting by author
+* Comment browsing and posting

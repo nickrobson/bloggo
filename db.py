@@ -23,7 +23,7 @@ if not os.path.exists(db_name):
                 html text, tags text, date text, url text)')
     cu.execute('create table comments (id integer primary key, \
                 postid integer, author text, content text, \
-                reply_to integer)')
+                date text, reply_to integer)')
     co.commit()
     co.close()
 
@@ -53,6 +53,9 @@ class Post(object):
         user = get_user(self.author)
         return user.display if user else self.author
 
+    def get_comments(self):
+        return get_comments(self.id)
+
 
 class Comment(object):
 
@@ -61,7 +64,8 @@ class Comment(object):
         self.postid = data[1]
         self.author = data[2]
         self.content = data[3]
-        self.reply_to = data[4]
+        self.date = datetime.datetime.strptime(data[4], '%Y-%m-%d %H:%M:%S.%f')
+        self.reply_to = data[5]
 
 
 def get_users():
@@ -175,3 +179,15 @@ def get_comment(id):
     comment = cu.fetchone()
     co.close()
     return Comment(comment) if comment else None
+
+
+def new_comment(postid, author, content, date, reply_to):
+    co = get_conn()
+    cu = co.cursor()
+    comment = (postid, author, content, date, reply_to)
+    cu.execute('insert into comments (postid, author, content, date, reply_to) \
+                VALUES (?, ?, ?, ?, ?)', comment)
+    id = cu.lastrowid
+    co.commit()
+    co.close()
+    return id
