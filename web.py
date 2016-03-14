@@ -52,17 +52,23 @@ def parseInt(s, n):
 
 
 app = Flask('bloggo')
-app.config['name'] = os.environ.get('BLOGGO_NAME', 'bloggo')
-app.config['port'] = parseInt(os.environ.get('BLOGGO_PORT'), 8080)
-app.secret_key = os.environ.get('BLOGGO_SECRET', 'super secret key')
-app.jinja_env.globals.update(rel_date=rel_date)
 
+
+def app_cfg():
+    return app.config
+
+
+with open('config.json', 'r') as f:
+    app.config.update(json.loads(f.read()))
+app.secret_key = app.config['secret']
+app.jinja_env.globals.update(rel_date=rel_date)
+app.jinja_env.globals.update(app_cfg=app_cfg)
 
 @app.route('/')
 def show_all():
     all_posts = db.list_all_posts()
-    return render_template('show_all.html',
-                           name=app.config['name'], posts=all_posts)
+    return render_template('show_all.html', name=app.config['name'],
+                           posts=all_posts)
 
 
 @app.route('/post/<int:postid>/')
@@ -72,8 +78,8 @@ def show_post(postid, ignored=None):
     if post:
         if request.path != '/post/%d/%s' % (post.id, post.url):
             return redirect('/post/%d/%s' % (post.id, post.url))
-    return render_template('show_post.html',
-                           name=app.config['name'], post=post, postid=postid)
+    return render_template('show_post.html', name=app.config['name'],
+                           post=post, postid=postid)
 
 
 @app.route('/new/', methods=['GET', 'POST'])
@@ -167,6 +173,8 @@ def comment():
 
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
+    if not app.config['allow_register']:
+        abort(401)
     if request.method == 'GET':
         if session.get('username'):
             return redirect(url_for('show_all'))
@@ -248,4 +256,4 @@ def logout():
     return redirect(url_for('show_all'))
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=app.config['port'])
+    app.run(debug=True, host='0.0.0.0', port=app.config['port'])

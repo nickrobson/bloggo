@@ -1,0 +1,7 @@
+{
+    "name": "bloggo",
+    "port": 5000,
+    "secret": "super secret key",
+    "allow_register": true,
+    "allow_comments": true
+}

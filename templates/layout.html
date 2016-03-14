@@ -16,8 +16,10 @@
                     <a href="{{ url_for('create') }}">New post</a> |
                     <a href="{{ url_for('logout') }}">Logout</a> ({{ session.display }})
                 {% else %}
-                    <a href="{{ url_for('login') }}">Log in</a> |
-                    <a href="{{ url_for('register') }}">Register</a>
+                    <a href="{{ url_for('login') }}">Log in</a>
+                    {% if app_cfg().allow_register %}
+                    | <a href="{{ url_for('register') }}">Register</a>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
