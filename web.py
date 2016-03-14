@@ -155,6 +155,8 @@ def delete(postid, ignored=None):
 
 @app.route('/comment/', methods=['POST'])
 def comment():
+    if not app.config['allow_comments']:
+        abort(403)
     form = request.form
     if form.get('postid') and form.get('author') and form.get('content'):
         postid = form.get('postid')
@@ -174,7 +176,7 @@ def comment():
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     if not app.config['allow_register']:
-        abort(401)
+        abort(403)
     if request.method == 'GET':
         if session.get('username'):
             return redirect(url_for('show_all'))
