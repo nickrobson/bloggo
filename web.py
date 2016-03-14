@@ -248,4 +248,4 @@ def logout():
     return redirect(url_for('show_all'))
 
 if __name__ == "__main__":
-    app.run(port=app.config['port'])
+    app.run(host='0.0.0.0', port=app.config['port'])
