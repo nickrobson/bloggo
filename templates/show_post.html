@@ -10,8 +10,8 @@
                         </div>
                         <div class="small-2 columns">
                             <h5 class="text-right">
-                                <a href="{{ url_for('edit', postid=postid) }}">Edit</a> |
-                                <a href="{{ url_for('delete', postid=postid) }}">Delete</a>
+                                <a href="{{ url_for('.edit', postid=postid) }}">Edit</a> |
+                                <a href="{{ url_for('.delete', postid=postid) }}">Delete</a>
                             </h5>
                         </div>
                     {% else %}
@@ -58,7 +58,7 @@
                             </div>
                         </div>
                     {% endfor %}
-                    <form method="POST" action="{{ url_for('comment') }}">
+                    <form method="POST" action="{{ url_for('.comment') }}">
                         <input type="hidden" name="postid" value="{{ post.id }}" />
                         <input type="text" name="author" placeholder="Enter your name here" />
                         <textarea name="content" placeholder="Enter your comment here" cols="10" rows="5"></textarea>
@@ -75,7 +75,7 @@
             <div class="warning callout">
                 <em>There is no post with ID of {{ postid }}!</em>
                 <br>
-                <a href="{{ url_for('show_all') }}"><em>Return Home</em></a>
+                <a href="{{ url_for('.show_all') }}"><em>Return Home</em></a>
             </div>
         {% endif %}
     </div>

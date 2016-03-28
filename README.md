@@ -2,7 +2,7 @@
 
 ### What is bloggo?
 
-bloggo is an easy-to-use open-source blogging software written in [Python](http://python.org), using [Flask](http://flask.pocoo.org/).
+bloggo is an easy-to-use open-source blogging software written in [Python](http://python.org), using [Flask](http://flask.pocoo.org).
 
 All user, post, and comment data is stored in an SQLite database named `bloggo.db`.
 

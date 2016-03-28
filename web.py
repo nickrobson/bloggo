@@ -6,8 +6,8 @@ import os
 import re
 import sys
 import db
-from flask import Flask, request, session, g, redirect, url_for, abort, \
-                    render_template, flash
+from flask import Flask, request, session, redirect, url_for, abort, \
+                    render_template, flash, Blueprint
 
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
           'August', 'September', 'October', 'November', 'December']
@@ -64,45 +64,47 @@ app.secret_key = app.config['secret']
 app.jinja_env.globals.update(rel_date=rel_date)
 app.jinja_env.globals.update(app_cfg=app_cfg)
 
-@app.route('/')
+bp = Blueprint('main', __name__)
+prefix = app.config.get('prefix', '')
+
+@bp.route('/')
 def show_all():
     all_posts = db.list_all_posts()
     return render_template('show_all.html', name=app.config['name'],
                            posts=all_posts)
 
 
-@app.route('/post/<int:postid>/')
-@app.route('/post/<int:postid>/<path:ignored>')
+@bp.route('/post/<int:postid>/')
+@bp.route('/post/<int:postid>/<path:ignored>')
 def show_post(postid, ignored=None):
     post = db.get_post(postid)
     if post:
-        if request.path != '/post/%d/%s' % (post.id, post.url):
-            return redirect('/post/%d/%s' % (post.id, post.url))
+        url = url_for('.show_post', postid=postid)
+        if request.path != url + post.url:
+            return redirect(url + post.url)
     return render_template('show_post.html', name=app.config['name'],
                            post=post, postid=postid)
 
 
-@app.route('/new/', methods=['GET', 'POST'])
-@app.route('/create/', methods=['GET', 'POST'])
+@bp.route('/new/', methods=['GET', 'POST'])
+@bp.route('/create/', methods=['GET', 'POST'])
 def create():
     if request.method == 'GET':
-        if session.get('username'):
-            return render_template('create.html', name=app.config['name'])
-        else:
+        if not session['username']:
             abort(401)
+        return render_template('create.html', name=app.config['name'])    
     else:
         form = request.form
         if 'title' in form and 'content' in form and 'tags' in form and \
            len(form['title']) and len(form['content']):
             i = db.new_post(form['title'], session['username'],
                             form['content'], form['tags'], date.today())
-            return redirect(url_for('show_post', postid=i))
-        else:
-            return redirect(url_for('show_all'))
+            return redirect(url_for('.show_post', postid=i))
+        return redirect(url_for('.show_all'))
 
 
-@app.route('/edit/<int:postid>/', methods=['GET', 'POST'])
-@app.route('/edit/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
+@bp.route('/edit/<int:postid>/', methods=['GET', 'POST'])
+@bp.route('/edit/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
 def edit(postid, ignored=None):
     post = db.get_post(postid)
     if request.method == 'GET':
@@ -118,7 +120,7 @@ def edit(postid, ignored=None):
             if len(form['title']) and len(form['content']):
                 db.edit_post(post, form['title'], form['content'],
                              form['tags'], date.today())
-                return redirect(url_for('show_post', postid=postid))
+                return redirect(url_for('.show_post', postid=postid))
             else:
                 missing = []
                 if len(form['title']) == 0:
@@ -132,11 +134,11 @@ def edit(postid, ignored=None):
                 return render_template('edit.html', name=app.config['name'],
                                        post=post, postid=postid)
         else:
-            return redirect(url_for('show_all'))
+            return redirect(url_for('.show_all'))
 
 
-@app.route('/delete/<int:postid>/', methods=['GET', 'POST'])
-@app.route('/delete/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
+@bp.route('/delete/<int:postid>/', methods=['GET', 'POST'])
+@bp.route('/delete/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
 def delete(postid, ignored=None):
     post = db.get_post(postid)
     if request.method == 'GET':
@@ -150,10 +152,10 @@ def delete(postid, ignored=None):
         if post and session.get('username') == post.author:
             db.delete_post(post)
             flash('Deleted post')
-        return redirect(url_for('show_all'))
+        return redirect(url_for('.show_all'))
 
 
-@app.route('/comment/', methods=['POST'])
+@bp.route('/comment/', methods=['POST'])
 def comment():
     if not app.config['allow_comments']:
         abort(403)
@@ -166,27 +168,27 @@ def comment():
         if post:
             reply_to = parseInt(form.get('reply_to', 0), 0)
             db.new_comment(postid, author, content, date.today(), reply_to)
-            return redirect(url_for('show_post', postid=postid))
+            return redirect(url_for('.show_post', postid=postid))
         else:
             abort(404)
     else:
         abort(400)
 
 
-@app.route('/register/', methods=['GET', 'POST'])
+@bp.route('/register/', methods=['GET', 'POST'])
 def register():
     if not app.config['allow_register']:
         abort(403)
     if request.method == 'GET':
         if session.get('username'):
-            return redirect(url_for('show_all'))
+            return redirect(url_for('.show_all'))
         else:
             return render_template('register.html', name=app.config['name'],
                                    username='', display='')
     else:
         form = request.form
         if session.get('username'):
-            return redirect(url_for('show_all'))
+            return redirect(url_for('.show_all'))
         elif len(form.get('username', '')) and len(form.get('password', '')) \
                 and len(form.get('display', '')):
             username = form['username']
@@ -209,7 +211,7 @@ def register():
             else:
                 db.new_user(username, password, display, True)
                 flash('Registered new account: ' + username + ', ' + display)
-                return redirect(url_for('show_all'))
+                return redirect(url_for('.show_all'))
         else:
             missing = []
             if len(form.get('username', '')) == 0:
@@ -221,20 +223,20 @@ def register():
             joined = ' & '.join(missing) if len(missing) < 3 else \
                      '%s, %s & %s' % (missing[0], missing[1], missing[2])
             flash('Missing ' + joined + '!')
-            return redirect(url_for('register'))
+            return redirect(url_for('.register'))
 
 
-@app.route('/login/', methods=['GET', 'POST'])
+@bp.route('/login/', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
         if session.get('username'):
-            return redirect(url_for('show_all'))
+            return redirect(url_for('.show_all'))
         else:
             return render_template('login.html', name=app.config['name'])
     else:
         form = request.form
         if session.get('username'):
-            return redirect(url_for('show_all'))
+            return redirect(url_for('.show_all'))
         elif len(form.get('username', '')) and len(form.get('password', '')):
             username = form['username']
             password = form['password']
@@ -244,18 +246,21 @@ def login():
                 session['username'] = username
                 session['display'] = user.display
                 flash('Logged in as: ' + user.display)
-                return redirect(url_for('show_all'))
+                return redirect(url_for('.show_all'))
             else:
                 flash('Invalid username or password!')
                 return render_template('login.html', name=app.config['name'])
-        return redirect(url_for('login'))
+        return redirect(url_for('.login'))
 
 
-@app.route('/logout/')
+@bp.route('/logout/')
 def logout():
+    session.pop('display', None)
     if session.pop('username', None):
         flash('You have been logged out.')
-    return redirect(url_for('show_all'))
+    return redirect(url_for('.show_all'))
+
+app.register_blueprint(bp, url_prefix=app.config.get('prefix', ''))
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=app.config['port'])

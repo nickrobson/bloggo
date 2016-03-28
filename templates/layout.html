@@ -1,24 +1,24 @@
 <!doctype html>
 <title>{{ name }}</title>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.0/foundation.min.css">
-<link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+<link rel='stylesheet' type='text/css' href='https://fonts.googleapis.com/css?family=Raleway'>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 <div class="wrapper">
     <div class="top-bar">
         <div class="row">
             <div class="top-bar-left">
-                <a href="{{ url_for('show_all') }}" style="color: black">
+                <a href="{{ url_for('.show_all') }}" style="color: black">
                     <strong>{{ name }}</strong>
                 </a>
             </div>
             <div class="top-bar-right">
                 {% if session.username %}
-                    <a href="{{ url_for('create') }}">New post</a> |
-                    <a href="{{ url_for('logout') }}">Logout</a> ({{ session.display }})
+                    <a href="{{ url_for('.create') }}">New post</a> |
+                    <a href="{{ url_for('.logout') }}">Logout</a> ({{ session.display }})
                 {% else %}
-                    <a href="{{ url_for('login') }}">Log in</a>
+                    <a href="{{ url_for('.login') }}">Log in</a>
                     {% if app_cfg().allow_register %}
-                    | <a href="{{ url_for('register') }}">Register</a>
+                    | <a href="{{ url_for('.register') }}">Register</a>
                     {% endif %}
                 {% endif %}
             </div>

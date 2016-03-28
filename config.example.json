@@ -2,6 +2,7 @@
     "name": "bloggo",
     "port": 5000,
     "secret": "super secret key",
+    "prefix": "",
     "allow_register": true,
     "allow_comments": true
 }

@@ -73,7 +73,7 @@ def get_users():
     cu = co.cursor()
     users = cu.execute('select * from users').fetchall()
     co.close()
-    return map(lambda u: User(u), users)
+    return map(User, users)
 
 
 def get_user(username):
@@ -120,7 +120,7 @@ def list_all_posts():
     cu = co.cursor()
     posts = cu.execute('select * from posts order by id desc').fetchall()
     co.close()
-    return map(lambda p: Post(p), posts)
+    return map(Post, posts)
 
 
 def to_post_tuple(title, author, content, tags, date):
@@ -145,8 +145,8 @@ def edit_post(post, title, content, tags, date):
     tup = to_post_tuple(title, post.author, content, tags, date)
     co = get_conn()
     cu = co.cursor()
-    cu.execute('update posts set title=?, author=?, content=?, html=?, tags=?, \
-               date=?, url=? where id=?', tup + (post.id,))
+    cu.execute('update posts set title=?, author=?, content=?, html=?, \
+                tags=?, date=?, url=? where id=?', tup + (post.id,))
     co.commit()
     post = co.cursor().execute('select * from posts where id=?',
                                (post.id,)).fetchone()
@@ -169,7 +169,7 @@ def get_comments(postid):
     cu.execute('select * from comments where postid=?', (postid,))
     comments = cu.fetchall()
     co.close()
-    return map(lambda c: Comment(c), comments)
+    return map(Comment, comments)
 
 
 def get_comment(id):
