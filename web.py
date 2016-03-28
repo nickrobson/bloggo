@@ -260,7 +260,7 @@ def logout():
         flash('You have been logged out.')
     return redirect(url_for('.show_all'))
 
-app.register_blueprint(bp, url_prefix=app.config.get('prefix', ''))
+app.register_blueprint(bp, url_prefix=prefix)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=app.config['port'])
