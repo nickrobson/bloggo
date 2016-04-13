@@ -121,7 +121,8 @@ def list_all_posts(user=None):
     if user is None:
         posts = cu.execute('select * from posts order by id desc').fetchall()
     else:
-        posts = cu.execute('select * from posts where author=? order by id desc',
+        posts = cu.execute('select * from posts where author=? \
+                            order by id desc',
                            (user,)).fetchall()
     co.close()
     return map(Post, posts)

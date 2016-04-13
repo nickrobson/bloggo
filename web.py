@@ -67,11 +67,13 @@ app.jinja_env.globals.update(app_cfg=app_cfg)
 bp = Blueprint('main', __name__)
 prefix = app.config.get('prefix', '')
 
+
 @bp.route('/')
 def show_all():
     all_posts = db.list_all_posts()
     return render_template('show_all.html', name=app.config['name'],
                            posts=all_posts)
+
 
 @bp.route('/user/<username>')
 def show_user_posts(username):
@@ -98,7 +100,7 @@ def create():
     if request.method == 'GET':
         if not session['username']:
             abort(401)
-        return render_template('create.html', name=app.config['name'])    
+        return render_template('create.html', name=app.config['name'])
     else:
         form = request.form
         if 'title' in form and 'content' in form and 'tags' in form and \
