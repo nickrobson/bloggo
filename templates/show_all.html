@@ -8,24 +8,46 @@
                         <h2 class="title">{{ post.title }}</h2>
                     </div>
                 </div>
-                <div class="row underlined">
+                <div class="row underlined gray">
                     <div class="small-6 columns">
-                        <h5>by {{ post.get_display_name() }}</h5>
+                        <h5>by <a class="dotted" href="{{ url_for('.show_all', user=post.author) }}">{{ post.get_display_name() }}</a></h5>
                     </div>
                     <div class="small-6 columns">
                         <h5 class="text-right">{{ rel_date(post.date) }}</h5>
                     </div>
                 </div>
-                <div class="row content">
+                <div class="row content underlined">
                     <div class="small-12 columns">
                         {{ post.html|safe }}
                     </div>
                 </div>
-                <div class="row link-to-full">
-                    <div class="small-12 columns">
-                        <a href="{{ url_for('.show_post', postid=post.id) }}">See full post</a>
+                {% if post.tags|length %}
+                    <div class="row content gray">
+                        <div class="small-6 columns">
+                            Tags:
+                            {% with user = request.view_args.user %}
+                                {% if user %}
+                                    {% for tag in post.tags %}
+                                        <a href="{{ url_for('.show_all', tag=tag, user=user) }}">{{ tag }}</a>
+                                    {% endfor %}
+                                {% else %}
+                                    {% for tag in post.tags %}
+                                        <a href="{{ url_for('.show_all', tag=tag) }}">{{ tag }}</a>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="small-6 columns text-right">
+                            <a href="{{ url_for('.show_post', postid=post.id) }}">See full post</a>
+                        </div>
                     </div>
-                </div>
+                {% else %}
+                    <div class="row" style="margin-top: 20px">
+                        <div class="small-12 columns">
+                            <a href="{{ url_for('.show_post', postid=post.id) }}">See full post</a>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         {% else %}
             <div class="warning callout">

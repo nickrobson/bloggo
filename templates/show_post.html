@@ -20,19 +20,33 @@
                         </div>
                     {% endif %}
                 </div>
-                <div class="row underlined">
+                <div class="row underlined gray">
                     <div class="small-6 columns">
-                        <h5>by {{ post.get_display_name() }}</h5>
+                        <h5>by <a class="dotted" href="{{ url_for('.show_all', user=post.author) }}">{{ post.get_display_name() }}</a></h5>
                     </div>
                     <div class="small-6 columns">
                         <h5 class="text-right">{{ rel_date(post.date) }}</h5>
                     </div>
                 </div>
+                {% if post.tags|length %}
+                <div class="row content underlined">
+                {% else %}
                 <div class="row content">
+                {% endif %}
                     <div class="small-12 columns">
                         {{ post.html|safe }}
                     </div>
                 </div>
+                {% if post.tags|length %}
+                    <div class="row content gray">
+                        <div class="small-12 columns">
+                            Tags:
+                            {% for tag in post.tags %}
+                                <a href="{{ url_for('.show_all', tag=tag) }}">{{ tag }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
             </div>
             {% if app_cfg().allow_comments %}
                 <div class="comments">

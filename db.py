@@ -45,7 +45,7 @@ class Post(object):
         self.author = data[2]
         self.content = data[3]
         self.html = data[4]
-        self.tags = data[5].split(' ')
+        self.tags = filter(lambda s: s and len(s), data[5].split(' '))
         self.date = datetime.datetime.strptime(data[6], '%Y-%m-%d %H:%M:%S.%f')
         self.url = data[7]
 
@@ -115,15 +115,25 @@ def get_post(id):
     return Post(post) if post else None
 
 
-def list_all_posts(user=None):
+def list_all_posts(user=None, tag=None):
     co = get_conn()
     cu = co.cursor()
-    if user is None:
-        posts = cu.execute('select * from posts order by id desc').fetchall()
+    query = 'select * from posts %s order by id desc'
+    params = ()
+    if user is not None and tag is not None:
+        query %= 'where author=? and tags like ?'
+        params = (user, '%%%s%%' % tag)
+        print query
+        print params
+    elif user is not None:
+        query %= 'where author=?'
+        params = (user,)
+    elif tag is not None:
+        query %= 'where tags like ?'
+        params = ('%%%s%%' % tag,)
     else:
-        posts = cu.execute('select * from posts where author=? \
-                            order by id desc',
-                           (user,)).fetchall()
+        query %= ''
+    posts = cu.execute(query, params).fetchall()
     co.close()
     return map(Post, posts)
 
@@ -147,6 +157,7 @@ def new_post(title, author, content, tags, date):
 
 
 def edit_post(post, title, content, tags, date):
+    tags = filter(lambda s: s and len(s), tags)
     tup = to_post_tuple(title, post.author, content, tags, date)
     co = get_conn()
     cu = co.cursor()

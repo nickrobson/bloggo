@@ -69,15 +69,11 @@ prefix = app.config.get('prefix', '')
 
 
 @bp.route('/')
-def show_all():
-    all_posts = db.list_all_posts()
-    return render_template('show_all.html', name=app.config['name'],
-                           posts=all_posts)
-
-
-@bp.route('/user/<username>')
-def show_user_posts(username):
-    all_posts = db.list_all_posts(user=username)
+@bp.route('/tag/<tag>/')
+@bp.route('/user/<user>/')
+@bp.route('/user/<user>/tag/<tag>/')
+def show_all(user=None, tag=None):
+    all_posts = db.list_all_posts(user=user, tag=tag)
     return render_template('show_all.html', name=app.config['name'],
                            posts=all_posts)
 
@@ -271,4 +267,4 @@ def logout():
 app.register_blueprint(bp, url_prefix=prefix)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=app.config['port'])
+    app.run(host='0.0.0.0', port=app.config['port'], debug=True)
