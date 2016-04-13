@@ -115,10 +115,14 @@ def get_post(id):
     return Post(post) if post else None
 
 
-def list_all_posts():
+def list_all_posts(user=None):
     co = get_conn()
     cu = co.cursor()
-    posts = cu.execute('select * from posts order by id desc').fetchall()
+    if user is None:
+        posts = cu.execute('select * from posts order by id desc').fetchall()
+    else:
+        posts = cu.execute('select * from posts where author=? order by id desc',
+                           (user,)).fetchall()
     co.close()
     return map(Post, posts)
 

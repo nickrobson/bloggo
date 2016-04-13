@@ -73,6 +73,12 @@ def show_all():
     return render_template('show_all.html', name=app.config['name'],
                            posts=all_posts)
 
+@bp.route('/user/<username>')
+def show_user_posts(username):
+    all_posts = db.list_all_posts(user=username)
+    return render_template('show_all.html', name=app.config['name'],
+                           posts=all_posts)
+
 
 @bp.route('/post/<int:postid>/')
 @bp.route('/post/<int:postid>/<path:ignored>')
