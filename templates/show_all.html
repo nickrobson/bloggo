@@ -1,5 +1,10 @@
 {% extends "layout.html" %}
 {% block body %}
+    {% if request.view_args.user %}
+        <div class="small-9 columns">
+    {% else %}
+        <div class="small-12 columns">
+    {% endif %}
     <div class="row posts">
         {% for post in posts %}
             <div class="post">
@@ -54,5 +59,19 @@
                 <em>It looks like there are no posts!</em>
             </div>
         {% endfor %}
+        </div>
     </div>
+    {% if request.view_args.user %}
+        <div class="small-3 columns">
+            <div class="userinfo" style="position: fixed; width: inherit">
+                {% with info = get_user_info(request.view_args.user) %}
+                    <h3>{{ info.display }}</h3>
+                    {% if info.image and info.image|length %}
+                        <img src="{{ info.image }}">
+                    {% endif %}
+                    <p class="gray">{{ info.info }}</p>
+                {% endwith %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

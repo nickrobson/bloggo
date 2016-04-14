@@ -7,7 +7,7 @@
         font-family: 'Raleway', sans-serif;
     }
 
-    .post, .comment, .comments {
+    .post, .comment, .comments, .userinfo {
         border: solid #eee 1px;
         padding: 30px 40px 30px 40px;
         margin-bottom: 25px;
@@ -42,7 +42,7 @@
     }
 </style>
 <div class="wrapper">
-    <div class="top-bar">
+    <div class="top-bar" style="position: fixed; width: 100%;">
         <div class="row">
             <div class="top-bar-left">
                 <a href="{{ url_for('.show_all') }}" style="color: black">
@@ -67,7 +67,7 @@
         {% if messages %}
         <div class="row">
             {% for message in messages %}
-                <div class="row warning callout">{{ message }}</div>
+                <div class="small-12 columns warning callout">{{ message }}</div>
             {% endfor %}
         </div>
         {% endif %}

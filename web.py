@@ -20,7 +20,7 @@ def rel_date(date):
     now = date.today()
     dt = now - date
     ampm = 'am' if date.hour < 12 else 'pm'
-    hour = '%02d' % (date.hour % 12 if date.hour % 12 > 0 else 12)
+    hour = '%d' % (date.hour % 12 if date.hour % 12 > 0 else 12)
     time = '%s:%02d %s' % (hour, date.minute, ampm)
     if date.year != now.year:
         return '%s, %s, %d %s %d' % (time, weekdays[date.weekday()], date.day,
@@ -44,6 +44,19 @@ def rel_date(date):
         return 'Just now'
 
 
+def get_user_info(username):
+    user = db.get_user(username)
+    if user is None:
+        return {'error': 'Invalid username!'}
+    res = dict()
+    if not user.info or user.info == '':
+        user.info = 'No information set.'
+    res['username'] = user.username
+    res['display'] = user.display
+    res['info'] = user.info
+    res['image'] = user.image
+    return res
+
 def parseInt(s, n):
     try:
         return int(s)
@@ -61,8 +74,11 @@ def app_cfg():
 with open('config.json', 'r') as f:
     app.config.update(json.loads(f.read()))
 app.secret_key = app.config['secret']
-app.jinja_env.globals.update(rel_date=rel_date)
-app.jinja_env.globals.update(app_cfg=app_cfg)
+app.jinja_env.globals.update({
+    'rel_date': rel_date,
+    'get_user_info': get_user_info,
+    'app_cfg': app_cfg
+})
 
 bp = Blueprint('main', __name__)
 prefix = app.config.get('prefix', '')

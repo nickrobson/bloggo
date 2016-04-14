@@ -17,7 +17,8 @@ if not os.path.exists(db_name):
     co = get_conn()
     cu = co.cursor()
     cu.execute('create table users (id integer primary key, \
-                username text, password text, display text)')
+                username text, password text, display text, \
+                info text, image text)')
     cu.execute('create table posts (id integer primary key, \
                 title text, author text, content text, \
                 html text, tags text, date text, url text)')
@@ -35,6 +36,8 @@ class User(object):
         self.username = data[1]
         self.password = data[2]
         self.display = data[3]
+        self.info = data[4]
+        self.image = data[5]
 
 
 class Post(object):
@@ -89,8 +92,7 @@ def get_user_with_pass(username, password):
     u = get_user(username)
     if u is not None and pbk.verify(password, u.password):
         return u
-    else:
-        return None
+    return None
 
 
 def new_user(username, password, display, encode=True):
@@ -98,9 +100,10 @@ def new_user(username, password, display, encode=True):
     cu = co.cursor()
     if encode:
         password = pbk.encrypt(password)
-    vals = (username, password, display)
-    cu.execute('insert into users (username, password, display) \
-                VALUES (?, ?, ?)', vals)
+    vals = (username, password, display, '', '')
+    cu.execute('insert into users \
+                (username, password, display, info, image) \
+                VALUES (?, ?, ?, ?, ?)', vals)
     id = cu.lastrowid
     co.commit()
     co.close()
