@@ -325,4 +325,4 @@ def error_server_error(e):
 app.register_blueprint(bp, url_prefix=prefix)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=app.config['port'], debug=True)
+    app.run(host='0.0.0.0', port=app.config['port'])

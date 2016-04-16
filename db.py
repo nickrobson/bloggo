@@ -128,8 +128,6 @@ def list_all_posts(user=None, tag=None):
     if user is not None and tag is not None:
         query %= 'where author=? and tags like ?'
         params = (user, '%%%s%%' % tag)
-        print query
-        print params
     elif user is not None:
         query %= 'where author=?'
         params = (user,)
