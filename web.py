@@ -137,7 +137,7 @@ def edit(postid, ignored=None):
            session.get('username') == post.author:
             if len(form['title']) and len(form['content']):
                 db.edit_post(post, form['title'], form['content'],
-                             form['tags'], date.today())
+                             form['tags'])
                 return redirect(url_for('.show_post', postid=postid))
             missing = []
             if len(form['title']) == 0:

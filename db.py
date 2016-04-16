@@ -164,13 +164,13 @@ def new_post(title, author, content, tags, date):
     return id
 
 
-def edit_post(post, title, content, tags, date):
+def edit_post(post, title, content, tags):
     tags = filter(lambda s: s and len(s), tags)
-    tup = to_post_tuple(title, post.author, content, tags, date)
+    tup = to_post_tuple(title, post.author, content, tags)
     co = get_conn()
     cu = co.cursor()
     cu.execute('update posts set title=?, author=?, content=?, html=?, \
-                tags=?, date=?, url=? where id=?', tup + (post.id,))
+                tags=?, url=? where id=?', tup + (post.id,))
     co.commit()
     post = co.cursor().execute('select * from posts where id=?',
                                (post.id,)).fetchone()
