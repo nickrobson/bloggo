@@ -21,7 +21,8 @@ if not os.path.exists(db_name):
                 info text, image text)')
     cu.execute('create table posts (id integer primary key, \
                 title text, author text, content text, \
-                html text, tags text, date text, url text)')
+                html text, tags text, date text, url text, \
+                deleted tinyint)')
     cu.execute('create table comments (id integer primary key, \
                 postid integer, author text, content text, \
                 date text, reply_to integer)')
@@ -51,6 +52,7 @@ class Post(object):
         self.tags = filter(lambda s: s and len(s), data[5].split(' '))
         self.date = datetime.datetime.strptime(data[6], '%Y-%m-%d %H:%M:%S.%f')
         self.url = data[7]
+        self.deleted = data[8]
 
     def get_display_name(self):
         user = get_user(self.author)
@@ -138,7 +140,9 @@ def list_all_posts(user=None, tag=None):
         query %= ''
     posts = cu.execute(query, params).fetchall()
     co.close()
-    return map(Post, posts)
+    posts = map(Post, posts)
+    posts = filter(lambda p: not p.deleted, posts)
+    return posts
 
 
 def to_post_tuple(title, author, content, tags, date):
@@ -151,8 +155,9 @@ def new_post(title, author, content, tags, date):
     post = to_post_tuple(title, author, content, tags, date)
     co = get_conn()
     cu = co.cursor()
-    cu.execute('insert into posts (title, author, content, html, tags, date, url) \
-                VALUES (?, ?, ?, ?, ?, ?, ?)', post)
+    cu.execute('insert into posts (title, author, content, html, tags, \
+                date, url, deleted) \
+                VALUES (?, ?, ?, ?, ?, ?, ?, 0)', post)
     id = cu.lastrowid
     co.commit()
     co.close()
@@ -176,7 +181,16 @@ def edit_post(post, title, content, tags, date):
 def delete_post(post):
     co = get_conn()
     cu = co.cursor()
-    cu.execute('delete from posts where id=?', (post.id,))
+    cu.execute('update posts set deleted=1 where id=?', (post.id,))
+    co.commit()
+    co.close()
+    return post
+
+
+def restore_post(post):
+    co = get_conn()
+    cu = co.cursor()
+    cu.execute('update posts set deleted=0 where id=?', (post.id,))
     co.commit()
     co.close()
     return post

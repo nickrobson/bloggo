@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block title %}Bad Request | {{ config.name }}{% endblock %}
+{% block body %}
+    <h2>It looks like something's wrong.</h2>
+    <h4 class="gray">If a link brought you here, please post an issue <a href="https://github.com/nickrobson/bloggo/">here</a> as the blog software creator would love to know!</h4>
+    <h4 class="gray">You can get back to the main page by clicking <a href="{{ url_for('main.show_all') }}">here</a>.</h4>
+{% endblock %}

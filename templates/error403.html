@@ -1,0 +1,6 @@
+{% extends "layout.html" %}
+{% block title %}Forbidden | {{ config.name }}{% endblock %}
+{% block body %}
+    <h2>It looks like you're not allowed to see that.</h2>
+    <h4 class="gray">You can get back to the main page by clicking <a href="{{ url_for('main.show_all') }}">here</a>.</h4>
+{% endblock %}

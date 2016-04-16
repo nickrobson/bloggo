@@ -1,5 +1,5 @@
 <!doctype html>
-<title>{{ name }}</title>
+<title>{% block title %}{{ config.name }}{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.0/foundation.min.css">
 <link rel='stylesheet' type='text/css' href='https://fonts.googleapis.com/css?family=Raleway'>
 <style type="text/css">
@@ -45,18 +45,18 @@
     <div class="top-bar" style="position: fixed; width: 100%;">
         <div class="row">
             <div class="top-bar-left">
-                <a href="{{ url_for('.show_all') }}" style="color: black">
-                    <strong>{{ name }}</strong>
+                <a href="{{ url_for('main.show_all') }}" style="color: black">
+                    <strong>{{ config.name }}</strong>
                 </a>
             </div>
             <div class="top-bar-right">
                 {% if session.username %}
-                    <a href="{{ url_for('.create') }}">New post</a> |
-                    <a href="{{ url_for('.logout') }}">Logout</a> ({{ session.display }})
+                    <a href="{{ url_for('main.create') }}">New post</a> |
+                    <a href="{{ url_for('main.logout') }}">Logout</a> ({{ session.display }})
                 {% else %}
-                    <a href="{{ url_for('.login') }}">Log in</a>
-                    {% if app_cfg().allow_register %}
-                    | <a href="{{ url_for('.register') }}">Register</a>
+                    <a href="{{ url_for('main.login') }}">Log in</a>
+                    {% if config.allow_register %}
+                    | <a href="{{ url_for('main.register') }}">Register</a>
                     {% endif %}
                 {% endif %}
             </div>

@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}Unauthorized | {{ config.name }}{% endblock %}
+{% block body %}
+    {% if session.username %}
+        <h2>It looks like you're not logged in.</h2>
+        <h4 class="gray">If you wish to log in, you can do so <a href="{{ url_for('main.login') }}">here</a>.</h4>
+    {% else %}
+        <h2>It looks like you're not allowed to do that.</h2>
+        <h4 class="gray">Perhaps you are logged in to the wrong account?</h4>
+    {% endif %}
+    <h4 class="gray">You can get back to the main page by clicking <a href="{{ url_for('main.show_all') }}">here</a>.</h4>
+{% endblock %}

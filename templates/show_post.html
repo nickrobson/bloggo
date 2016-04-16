@@ -1,95 +1,93 @@
 {% extends "layout.html" %}
+{% block title %}
+    {% if post %}
+        {{ post.title }} |
+    {% endif %}
+    {{ config.name }}
+{% endblock %}
 {% block body %}
     <div class="row posts">
-        {% if post %}
-            <div class="post">
-                <div class="row">
-                    {% if session.username == post.author %}
-                        <div class="small-10 columns">
-                            <h2 class="title">{{ post.title }}</h2>
-                        </div>
-                        <div class="small-2 columns">
-                            <h5 class="text-right">
-                                <a href="{{ url_for('.edit', postid=postid) }}">Edit</a> |
-                                <a href="{{ url_for('.delete', postid=postid) }}">Delete</a>
-                            </h5>
-                        </div>
-                    {% else %}
-                        <div class="small-12 columns">
-                            <h2 class="title">{{ post.title }}</h2>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="row underlined gray">
-                    <div class="small-6 columns">
-                        <h5>by <a class="dotted" href="{{ url_for('.show_all', user=post.author) }}">{{ post.get_display_name() }}</a></h5>
+        <div class="post">
+            <div class="row">
+                {% if session.username == post.author %}
+                    <div class="small-10 columns">
+                        <h2 class="title">{{ post.title }}</h2>
                     </div>
-                    <div class="small-6 columns">
-                        <h5 class="text-right">{{ rel_date(post.date) }}</h5>
+                    <div class="small-2 columns">
+                        <h5 class="text-right">
+                            <a href="{{ url_for('.edit', postid=postid) }}">Edit</a> |
+                            <a href="{{ url_for('.delete', postid=postid) }}">Delete</a>
+                        </h5>
                     </div>
-                </div>
-                {% if post.tags|length %}
-                <div class="row content underlined">
                 {% else %}
-                <div class="row content">
-                {% endif %}
                     <div class="small-12 columns">
-                        {{ post.html|safe }}
-                    </div>
-                </div>
-                {% if post.tags|length %}
-                    <div class="row content gray">
-                        <div class="small-12 columns">
-                            Tags:
-                            {% for tag in post.tags %}
-                                <a href="{{ url_for('.show_all', tag=tag) }}">{{ tag }}</a>
-                            {% endfor %}
-                        </div>
+                        <h2 class="title">{{ post.title }}</h2>
                     </div>
                 {% endif %}
             </div>
-            {% if app_cfg().allow_comments %}
-                <div class="comments">
-                    <div class="row">
-                        <div class="small-6 columns">
-                            <h4>Comments</h4>
-                        </div>
+            <div class="row underlined gray">
+                <div class="small-6 columns">
+                    <h5>by <a class="dotted" href="{{ url_for('.show_all', user=post.author) }}">{{ post.get_display_name() }}</a></h5>
+                </div>
+                <div class="small-6 columns">
+                    <h5 class="text-right">{{ rel_date(post.date) }}</h5>
+                </div>
+            </div>
+            {% if post.tags|length %}
+            <div class="row content underlined">
+            {% else %}
+            <div class="row content">
+            {% endif %}
+                <div class="small-12 columns">
+                    {{ post.html|safe }}
+                </div>
+            </div>
+            {% if post.tags|length %}
+                <div class="row content gray">
+                    <div class="small-12 columns">
+                        Tags:
+                        {% for tag in post.tags %}
+                            <a href="{{ url_for('.show_all', tag=tag) }}">{{ tag }}</a>
+                        {% endfor %}
                     </div>
-                    {% for comment in post.get_comments() %}
-                        <div class="comment">
-                            <div class="row underlined">
-                                <div class="small-6 columns">
-                                    <h5>from {{ comment.author }}</h5>
-                                </div>
-                                <div class="small-6 columns">
-                                    <h5 class="text-right">{{ rel_date(comment.date) }}</h5>
-                                </div>
-                            </div>
-                            <div class="row content">
-                                <div class="small-12 columns">
-                                    {{ comment.content }}
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                    <form method="POST" action="{{ url_for('.comment') }}">
-                        <input type="hidden" name="postid" value="{{ post.id }}" />
-                        <input type="text" name="author" placeholder="Enter your name here" />
-                        <textarea name="content" placeholder="Enter your comment here" cols="10" rows="5"></textarea>
-
-                        <div class="row">
-                            <div class="small-4 columns"><br></div>
-                            <input class="button small-4 columns" type="submit" value="Create" />
-                            <div class="small-4 columns"><br></div>
-                        </div>
-                    </form>
                 </div>
             {% endif %}
-        {% else %}
-            <div class="warning callout">
-                <em>There is no post with ID of {{ postid }}!</em>
-                <br>
-                <a href="{{ url_for('.show_all') }}"><em>Return Home</em></a>
+        </div>
+        {% if config.allow_comments %}
+            <div class="comments">
+                <div class="row">
+                    <div class="small-6 columns">
+                        <h4>Comments</h4>
+                    </div>
+                </div>
+                {% for comment in post.get_comments() %}
+                    <div class="comment">
+                        <div class="row underlined">
+                            <div class="small-6 columns">
+                                <h5>from {{ comment.author }}</h5>
+                            </div>
+                            <div class="small-6 columns">
+                                <h5 class="text-right">{{ rel_date(comment.date) }}</h5>
+                            </div>
+                        </div>
+                        <div class="row content">
+                            <div class="small-12 columns">
+                                {{ comment.content }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                <form method="POST" action="{{ url_for('.comment') }}">
+                    <input type="hidden" name="postid" value="{{ post.id }}" />
+                    <input type="text" name="author" placeholder="Enter your name here" />
+                    <textarea name="content" placeholder="Enter your comment here" cols="10" rows="5"></textarea>
+
+                    <div class="row">
+                        <div class="small-4 columns"><br></div>
+                        <input class="button small-4 columns" type="submit" value="Create" />
+                        <div class="small-4 columns"><br></div>
+                    </div>
+                </form>
             </div>
         {% endif %}
     </div>

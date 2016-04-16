@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% block title %}New post | {{ config.name }}{% endblock %}
 {% block body %}
     <form method="POST" action="{{ url_for('.create') }}">
         <div class="row">

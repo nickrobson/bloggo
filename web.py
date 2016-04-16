@@ -7,13 +7,13 @@ import re
 import sys
 import db
 from flask import Flask, request, session, redirect, url_for, abort, \
-                    render_template, flash, Blueprint
+                    render_template, flash, Blueprint, g
 
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
           'August', 'September', 'October', 'November', 'December']
-
 weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
             'Friday', 'Saturday', 'Sunday']
+app = Flask('bloggo')
 
 
 def rel_date(date):
@@ -40,8 +40,7 @@ def rel_date(date):
         return '%d seconds ago' % dt.seconds
     elif dt.seconds == 1:
         return '1 second ago'
-    else:
-        return 'Just now'
+    return 'Just now'
 
 
 def get_user_info(username):
@@ -57,6 +56,7 @@ def get_user_info(username):
     res['image'] = user.image
     return res
 
+
 def parseInt(s, n):
     try:
         return int(s)
@@ -64,20 +64,12 @@ def parseInt(s, n):
         return n
 
 
-app = Flask('bloggo')
-
-
-def app_cfg():
-    return app.config
-
-
 with open('config.json', 'r') as f:
     app.config.update(json.loads(f.read()))
 app.secret_key = app.config['secret']
 app.jinja_env.globals.update({
     'rel_date': rel_date,
-    'get_user_info': get_user_info,
-    'app_cfg': app_cfg
+    'get_user_info': get_user_info
 })
 
 bp = Blueprint('main', __name__)
@@ -90,30 +82,34 @@ prefix = app.config.get('prefix', '')
 @bp.route('/user/<user>/tag/<tag>/')
 def show_all(user=None, tag=None):
     all_posts = db.list_all_posts(user=user, tag=tag)
-    return render_template('show_all.html', name=app.config['name'],
-                           posts=all_posts)
+    return render_template('show_all.html', posts=all_posts)
 
 
 @bp.route('/post/<int:postid>/')
 @bp.route('/post/<int:postid>/<path:ignored>')
 def show_post(postid, ignored=None):
     post = db.get_post(postid)
-    if post:
-        url = url_for('.show_post', postid=postid)
-        if request.path != url + post.url:
-            return redirect(url + post.url)
-    return render_template('show_post.html', name=app.config['name'],
-                           post=post, postid=postid)
+    if not post:
+        abort(404)
+    url = url_for('.show_post', postid=postid)
+    if request.path != url + post.url:
+        return redirect(url + post.url)
+    if post.deleted:
+        g.postauthor = post.author
+        abort(410)
+    return render_template('show_post.html', post=post, postid=postid)
 
 
 @bp.route('/new/', methods=['GET', 'POST'])
 @bp.route('/create/', methods=['GET', 'POST'])
 def create():
     if request.method == 'GET':
-        if not session['username']:
+        if not session.get('username'):
             abort(401)
-        return render_template('create.html', name=app.config['name'])
+        return render_template('create.html')
     else:
+        if not session.get('username'):
+            abort(401)
         form = request.form
         if 'title' in form and 'content' in form and 'tags' in form and \
            len(form['title']) and len(form['content']):
@@ -128,11 +124,13 @@ def create():
 def edit(postid, ignored=None):
     post = db.get_post(postid)
     if request.method == 'GET':
-        if not post or session.get('username') == post.author:
-            return render_template('edit.html', name=app.config['name'],
-                                   post=post, postid=postid)
-        else:
+        if not post:
+            abort(404)
+        if post.deleted:
+            abort(400)
+        if session.get('username') != post.author:
             abort(401)
+        return render_template('edit.html', post=post, postid=postid)
     else:
         form = request.form
         if 'title' in form and 'content' in form and 'tags' in form and \
@@ -141,20 +139,17 @@ def edit(postid, ignored=None):
                 db.edit_post(post, form['title'], form['content'],
                              form['tags'], date.today())
                 return redirect(url_for('.show_post', postid=postid))
-            else:
-                missing = []
-                if len(form['title']) == 0:
-                    missing.append('title')
-                if len(form['content']) == 0:
-                    missing.append('content')
-                flash('Missing ' + ' & '.join(missing) + '!')
-                post.title = form['title']
-                post.content = form['content']
-                post.tags = form['tags'].split(' ')
-                return render_template('edit.html', name=app.config['name'],
-                                       post=post, postid=postid)
-        else:
-            return redirect(url_for('.show_all'))
+            missing = []
+            if len(form['title']) == 0:
+                missing.append('title')
+            if len(form['content']) == 0:
+                missing.append('content')
+            flash('Missing ' + ' & '.join(missing) + '!')
+            post.title = form['title']
+            post.content = form['content']
+            post.tags = form['tags'].split(' ')
+            return render_template('edit.html', post=post, postid=postid)
+        return redirect(url_for('.show_all'))
 
 
 @bp.route('/delete/<int:postid>/', methods=['GET', 'POST'])
@@ -162,22 +157,43 @@ def edit(postid, ignored=None):
 def delete(postid, ignored=None):
     post = db.get_post(postid)
     if request.method == 'GET':
-        if not post or session.get('username') == post.author:
-            return render_template('delete.html', name=app.config['name'],
-                                   post=post, postid=postid)
-        else:
-            abort(401)
-    else:
-        form = request.form
-        if post and session.get('username') == post.author:
-            db.delete_post(post)
-            flash('Deleted post')
+        if not post:
+            abort(404)
+        if post.deleted:
+            abort(400)
+        if session.get('username') == post.author:
+            return render_template('delete.html', post=post, postid=postid)
+        abort(401)
+    form = request.form
+    if post and not post.deleted and session.get('username') == post.author:
+        db.delete_post(post)
+        flash('Deleted post')
         return redirect(url_for('.show_all'))
+    abort(400)
+
+
+@bp.route('/restore/<int:postid>/', methods=['GET', 'POST'])
+@bp.route('/restore/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
+def restore(postid, ignored=None):
+    post = db.get_post(postid)
+    if request.method == 'GET':
+        if not post:
+            abort(404)
+        if not post.deleted:
+            abort(400)
+        if session.get('username') != post.author:
+            abort(401)
+        return render_template('restore.html', post=post, postid=postid)
+    form = request.form
+    if post and session.get('username') == post.author:
+        db.restore_post(post)
+        flash('Restored post ' + post.title)
+    abort(403)
 
 
 @bp.route('/comment/', methods=['POST'])
 def comment():
-    if not app.config['allow_comments']:
+    if not app.config.get('allow_comments', True):
         abort(403)
     form = request.form
     if form.get('postid') and form.get('author') and form.get('content'):
@@ -189,10 +205,8 @@ def comment():
             reply_to = parseInt(form.get('reply_to', 0), 0)
             db.new_comment(postid, author, content, date.today(), reply_to)
             return redirect(url_for('.show_post', postid=postid))
-        else:
-            abort(404)
-    else:
-        abort(400)
+        abort(404)
+    abort(400)
 
 
 @bp.route('/register/', methods=['GET', 'POST'])
@@ -203,8 +217,7 @@ def register():
         if session.get('username'):
             return redirect(url_for('.show_all'))
         else:
-            return render_template('register.html', name=app.config['name'],
-                                   username='', display='')
+            return render_template('register.html', username='', display='')
     else:
         form = request.form
         if session.get('username'):
@@ -219,14 +232,12 @@ def register():
                 flash('Invalid username. Must be alphabetic with ' +
                       '3-20 characters.')
                 return render_template('register.html',
-                                       name=app.config['name'],
                                        username=username, display=display)
 
             user = db.get_user(username)
             if user:
                 flash('Username is taken!')
                 return render_template('register.html',
-                                       name=app.config['name'],
                                        username=username, display=display)
             else:
                 db.new_user(username, password, display, True)
@@ -252,7 +263,7 @@ def login():
         if session.get('username'):
             return redirect(url_for('.show_all'))
         else:
-            return render_template('login.html', name=app.config['name'])
+            return render_template('login.html')
     else:
         form = request.form
         if session.get('username'):
@@ -269,7 +280,7 @@ def login():
                 return redirect(url_for('.show_all'))
             else:
                 flash('Invalid username or password!')
-                return render_template('login.html', name=app.config['name'])
+                return render_template('login.html')
         return redirect(url_for('.login'))
 
 
@@ -279,6 +290,37 @@ def logout():
     if session.pop('username', None):
         flash('You have been logged out.')
     return redirect(url_for('.show_all'))
+
+
+@app.errorhandler(400)
+def error_bad_request(e):
+    return render_template('error400.html'), 400
+
+
+@app.errorhandler(401)
+def error_unauthorized(e):
+    return render_template('error401.html'), 401
+
+
+@app.errorhandler(403)
+def error_forbidden(e):
+    return render_template('error403.html'), 403
+
+
+@app.errorhandler(404)
+def error_page_not_found(e):
+    return render_template('error404.html'), 404
+
+
+@app.errorhandler(410)
+def error_page_gone(e):
+    return render_template('error410.html'), 410
+
+
+@app.errorhandler(500)
+def error_server_error(e):
+    return render_template('error500.html'), 500
+
 
 app.register_blueprint(bp, url_prefix=prefix)
 

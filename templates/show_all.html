@@ -1,4 +1,16 @@
 {% extends "layout.html" %}
+{% block title %}
+    {% if request.view_args.user %}
+        {% if request.view_args.tag %}
+            {{ request.view_args.user }}'s {{ request.view_args.tag }} posts |
+        {% else %}
+            {{ request.view_args.user }}'s posts |
+        {% endif %}
+    {% elif request.view_args.tag %}
+        {{ request.view_args.tag }} posts |
+    {% endif %}
+    {{ config.name }}
+{% endblock %}
 {% block body %}
     {% if request.view_args.user %}
         <div class="small-9 columns">
