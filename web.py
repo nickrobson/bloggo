@@ -13,6 +13,7 @@ months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
           'August', 'September', 'October', 'November', 'December']
 weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
             'Friday', 'Saturday', 'Sunday']
+
 app = Flask('bloggo')
 
 
@@ -325,4 +326,4 @@ def error_server_error(e):
 app.register_blueprint(bp, url_prefix=prefix)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=app.config['port'])
+    app.run(host='0.0.0.0', port=app.config.get('port', 5000))
