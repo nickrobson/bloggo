@@ -168,7 +168,7 @@ def edit_post(post, title, content, tags):
     co = get_conn()
     cu = co.cursor()
     cu.execute('update posts set title=?, author=?, content=?, html=?, \
-                tags=?, url=? where id=?', tup + (post.id,))
+                tags=?, url=?, date=? where id=?', tup + (post.id,))
     co.commit()
     post = co.cursor().execute('select * from posts where id=?',
                                (post.id,)).fetchone()
