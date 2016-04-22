@@ -164,7 +164,7 @@ def new_post(title, author, content, tags, date):
 
 def edit_post(post, title, content, tags):
     tags = filter(lambda s: s and len(s), tags)
-    tup = to_post_tuple(title, post.author, content, tags)
+    tup = to_post_tuple(title, post.author, content, tags, post.date)
     co = get_conn()
     cu = co.cursor()
     cu.execute('update posts set title=?, author=?, content=?, html=?, \
