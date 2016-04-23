@@ -29,10 +29,14 @@ def rel_date(date):
     elif dt.days >= 7:
         return '%s, %s, %d %s' % (time, weekdays[date.weekday()], date.day,
                                   months[date.month - 1])
-    elif dt.days >= 1:
+    elif dt.days > 1:
         return '%d days ago' % dt.days
-    elif dt.seconds >= 3600:
+    elif dt.days == 1:
+        return '1 day ago'
+    elif dt.seconds >= 7200:
         return '%d hours ago' % (dt.seconds // 3600)
+    elif dt.seconds >= 3600:
+        return '1 hour ago'
     elif dt.seconds >= 120:
         return '%d minutes ago' % (dt.seconds // 60)
     elif dt.seconds >= 60:

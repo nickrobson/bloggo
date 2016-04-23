@@ -146,7 +146,7 @@ def list_all_posts(user=None, tag=None):
 def to_post_tuple(title, author, content, tags, date):
     html = markdown.convert(content)
     url = '%s' % re.sub('[^a-zA-Z0-9 ]', '', title).replace(' ', '-').lower()
-    return (title, author, content, html, tags, date, url)
+    return (title, author, content, html, ' '.join(tags), date, url)
 
 
 def new_post(title, author, content, tags, date):
