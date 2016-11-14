@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}Settings | {{ config.name }}{% endblock %}
+{% block body %}
+  <h2>Settings</h2>
+    <form action="{{ url_for('.settings') }}" method="POST">
+        <div class="input-group">
+            <label>Your Display Name:
+                <input class="input-group-field" type="text" name="display" placeholder="Don't change display name" value="{{ user_disp }}" />
+            </label>
+        </div>
+        <div class="input-group">
+            <label>New Password:
+                <input class="input-group-field" type="password" name="password" placeholder="Don't change password" value="" />
+            </label>
+        </div>
+        <div class="input-group">
+            <label>Confirm Password:
+                <input class="input-group-field" type="password" name="cpassword" placeholder="Don't change password" value="" />
+            </label>
+        </div>
+        <div class="input-group">
+            <label>Description:
+                <input class="input-group-field" type="text" name="description" placeholder="No description" value="{{ user_desc }}" />
+            </label>
+        </div>
+        {% if False %}
+        <div class="input-group">
+            <label>Profile Picture:
+                <input class="input-group-field" type="file" name="profilepic" />
+            </label>
+        </div>
+        {% endif %}
+        <div class="row">
+            <div class="small-3 medium-2 columns">&nbsp;</div>
+            <div class="small-3 medium-4 columns">
+                <input type="submit" value="Update" class="button" style="width: 100%; font-size: 20px;" />
+            </div>
+            <div class="small-3 medium-4 columns">
+                <a href="/"><div class="button" style="width: 100%; font-size: 20px;">Cancel</div></a>
+            </div>
+            <div class="small-3 medium-2 columns">&nbsp;</div>
+        </div>
+    </form>
+{% endblock %}
