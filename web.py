@@ -334,6 +334,6 @@ if __name__ == "__main__":
     sslctx = None
     if 'ssl' in app.config:
         sslconfig = app.config['ssl']
-        sslctx = ssl.SSLContext()
+        sslctx = ssl.SSLContext(protocol = ssl.PROTOCOL_SSLv23)
         sslctx.load_cert_chain(sslconfig['certfile'], sslconfig.get('keyfile'), sslconfig.get('password'))
     app.run(host='0.0.0.0', port=app.config.get('port', 5000), ssl_context=sslctx)
