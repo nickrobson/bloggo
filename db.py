@@ -40,7 +40,7 @@ class Post(object):
         self.author = data[2]
         self.content = data[3]
         self.html = data[4]
-        self.tags = filter(lambda s: s and len(s), data[5].split(' '))
+        self.tags = [s for s in data[5].split(' ') if s and len(s)]
         self.date = datetime.datetime.strptime(data[6], '%Y-%m-%d %H:%M:%S.%f')
         self.url = data[7]
         self.deleted = data[8]
@@ -68,7 +68,7 @@ def get_users():
     cu = co.cursor()
     users = cu.execute('select * from users').fetchall()
     co.close()
-    return map(User, users)
+    return list(map(User, users))
 
 def get_user(username):
     co = get_conn()
@@ -121,8 +121,8 @@ def list_all_posts(user=None, tag=None):
         query %= ''
     posts = cu.execute(query, params).fetchall()
     co.close()
-    posts = map(Post, posts)
-    posts = filter(lambda p: not p.deleted, posts)
+    posts = list(map(Post, posts))
+    posts = [p for p in posts if not p.deleted]
     return posts
 
 def to_post_tuple(title, author, content, tags, date):
@@ -141,7 +141,7 @@ def new_post(title, author, content, tags, date):
     return id
 
 def edit_post(post, title, content, tags):
-    tags = filter(lambda s: s and len(s), tags)
+    tags = [t for t in tags if t and len(t)]
     tup = to_post_tuple(title, post.author, content, tags, post.date)
     co = get_conn()
     cu = co.cursor()
@@ -173,7 +173,7 @@ def get_comments(postid):
     cu.execute('select * from comments where postid=?', (postid,))
     comments = cu.fetchall()
     co.close()
-    return map(Comment, comments)
+    return list(map(Comment, comments))
 
 def get_comment(id):
     co = get_conn()

@@ -67,7 +67,7 @@ def get_user_info(username):
 def parseInt(s, n):
     try:
         return int(s)
-    except Exception, e:
+    except Exception as e:
         return n
 
 
