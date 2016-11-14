@@ -4,7 +4,9 @@ from datetime import datetime as date
 import json
 import os
 import re
+import ssl
 import sys
+
 import db
 from flask import Flask, request, session, redirect, url_for, abort, \
                     render_template, flash, Blueprint, g
@@ -285,7 +287,6 @@ def login():
                 return redirect(url_for('.show_all'))
             else:
                 flash('Invalid username or password!')
-                return render_template('login.html')
         return redirect(url_for('.login'))
 
 
@@ -330,4 +331,8 @@ def error_server_error(e):
 app.register_blueprint(bp, url_prefix=prefix)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=app.config.get('port', 5000))
+    sslctx = None
+    if 'ssl' in app.config:
+        sslconfig = app.config['ssl']
+        sslctx = ssl.SSLContext.load_cert_chain(sslconfig['certfile'], sslconfig.get('keyfile'), sslconfig.get('password'))
+    app.run(host='0.0.0.0', port=app.config.get('port', 5000), ssl_context=sslctx)
