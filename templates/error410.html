@@ -4,6 +4,7 @@
     <h2>It looks like that has been deleted.</h2>
     {% if session.username and request.path.startswith('/post/') and session.username == g.postauthor %}
         <h4 class="gray">Unintentional deletion? Click <a href="{{ url_for('main.restore', postid=request.view_args.postid) }}">here</a> to restore.</h4>
+        <h5 class="gray">If you have restored this post, but are still seeing this page, try refreshing the page.</h5>
     {% elif not session.username %}
         <h4 class="gray">If you deleted this, log in and come back here to restore it.</h4>
     {% endif %}

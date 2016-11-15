@@ -96,6 +96,35 @@ def new_user(username, password, display, encode=True):
     co.close()
     return id
 
+def update_user(username, to_update, flasher = None):
+    u = get_user(username)
+    if u is None:
+        return
+    query, queryparams = [], []
+    if 'display' in to_update:
+        query.append('display=?')
+        queryparams.append(to_update['display'])
+    if 'info' in to_update:
+        query.append('info=?')
+        queryparams.append(to_update['info'])
+    if 'password' in to_update and 'old_password' in to_update:
+        if pbk.verify(to_update['old_password'], u.password):
+            query.append('password=?')
+            queryparams.append(pbk.encrypt(to_update['password']))
+        else:
+            if flasher:
+                flasher('You entered the wrong password as your current password.')
+            return False
+    if not len(query):
+        return False
+    query = 'update users set ' + ', '.join(query) + 'where username=?'
+    co = get_conn()
+    cu = co.cursor()
+    cu.execute(query, tuple(queryparams + [username]))
+    co.commit()
+    co.close()
+    return True
+
 def get_post(id):
     co = get_conn()
     cu = co.cursor()
@@ -128,7 +157,7 @@ def list_all_posts(user=None, tag=None):
 def to_post_tuple(title, author, content, tags, date):
     html = markdown.convert(content)
     url = '%s' % re.sub('[^a-zA-Z0-9 ]', '', title).replace(' ', '-').lower()
-    return (title, author, content, html, ' '.join(tags), date, url)
+    return (title, author, content, html, tags, date, url)
 
 def new_post(title, author, content, tags, date):
     post = to_post_tuple(title, author, content, tags, date)
@@ -141,7 +170,6 @@ def new_post(title, author, content, tags, date):
     return id
 
 def edit_post(post, title, content, tags):
-    tags = [t for t in tags if t and len(t)]
     tup = to_post_tuple(title, post.author, content, tags, post.date)
     co = get_conn()
     cu = co.cursor()
@@ -149,7 +177,7 @@ def edit_post(post, title, content, tags):
     co.commit()
     post = co.cursor().execute('select * from posts where id=?', (post.id,)).fetchone()
     co.close()
-    return post
+    return Post(post) if post else None
 
 def delete_post(post):
     co = get_conn()

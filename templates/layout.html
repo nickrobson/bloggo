@@ -42,7 +42,7 @@
     }
 </style>
 <div class="wrapper">
-    <div class="top-bar" style="position: fixed; width: 100%;">
+    <div class="top-bar" style="position: fixed; width: 100%; z-index: 10">
         <div class="row">
             <div class="top-bar-left">
                 <a href="{{ url_for('main.show_all') }}" style="color: black">
@@ -52,6 +52,7 @@
             <div class="top-bar-right">
                 {% if session.username %}
                     <a href="{{ url_for('main.create') }}">New post</a> |
+                    <a href="{{ url_for('main.settings') }}">Settings</a> |
                     <a href="{{ url_for('main.logout') }}">Logout</a> ({{ session.display }})
                 {% else %}
                     <a href="{{ url_for('main.login') }}">Log in</a>

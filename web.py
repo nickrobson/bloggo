@@ -8,8 +8,7 @@ import ssl
 import sys
 
 import db
-from flask import Flask, request, session, redirect, url_for, abort, \
-                    render_template, flash, Blueprint, g
+from flask import Flask, request, session, redirect, url_for, abort, render_template, flash, Blueprint, g
 
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
           'August', 'September', 'October', 'November', 'December']
@@ -55,8 +54,6 @@ def get_user_info(username):
     if user is None:
         return {'error': 'Invalid username!'}
     res = dict()
-    if not user.info or user.info == '':
-        user.info = 'No information set.'
     res['username'] = user.username
     res['display'] = user.display
     res['info'] = user.info
@@ -118,10 +115,8 @@ def create():
         if not session.get('username'):
             abort(401)
         form = request.form
-        if 'title' in form and 'content' in form and 'tags' in form and \
-           len(form['title']) and len(form['content']):
-            i = db.new_post(form['title'], session['username'],
-                            form['content'], form['tags'], date.today())
+        if 'title' in form and 'content' in form and 'tags' in form and len(form['title']) and len(form['content']):
+            i = db.new_post(form['title'], session['username'], form['content'], form['tags'], date.today())
             return redirect(url_for('.show_post', postid=i))
         return redirect(url_for('.show_all'))
 
@@ -140,11 +135,9 @@ def edit(postid, ignored=None):
         return render_template('edit.html', post=post, postid=postid)
     else:
         form = request.form
-        if 'title' in form and 'content' in form and 'tags' in form and \
-           session.get('username') == post.author:
+        if 'title' in form and 'content' in form and 'tags' in form and session.get('username') == post.author:
             if len(form['title']) and len(form['content']):
-                db.edit_post(post, form['title'], form['content'],
-                             form['tags'])
+                db.edit_post(post, form['title'], form['content'], form['tags'])
                 return redirect(url_for('.show_post', postid=postid))
             missing = []
             if len(form['title']) == 0:
@@ -183,6 +176,8 @@ def delete(postid, ignored=None):
 @bp.route('/restore/<int:postid>/<path:ignored>', methods=['GET', 'POST'])
 def restore(postid, ignored=None):
     post = db.get_post(postid)
+    if not post.deleted:
+        return redirect(url_for('.show_post', postid=postid))
     if request.method == 'GET':
         if not post:
             abort(404)
@@ -195,6 +190,7 @@ def restore(postid, ignored=None):
     if post and session.get('username') == post.author:
         db.restore_post(post)
         flash('Restored post ' + post.title)
+        return redirect(url_for('.show_post', postid=postid))
     abort(403)
 
 
@@ -297,6 +293,39 @@ def logout():
         flash('You have been logged out.')
     return redirect(url_for('.show_all'))
 
+@bp.route('/settings/', methods=['GET', 'POST'])
+def settings():
+    username = session.get('username')
+    if not username:
+        abort(401)
+    user_info = get_user_info(username)
+    if request.method == 'GET':
+        return render_template('settings.html', user_info = user_info)
+    form = request.form
+    files = request.files
+    to_update = {}
+    new_display = form.get('display')
+    new_description = form.get('description')
+    new_password = form.get('npassword')
+    if new_password and len(new_password):
+        curr_password = form.get('password')
+        if not curr_password or not len(curr_password):
+            flash('You need to enter your current password!')
+        elif new_password == form.get('cnpassword'):
+            to_update['password'] = new_password
+            to_update['old_password'] = curr_password
+        else:
+            flash('The "new" passwords that you entered do not match!')
+    if new_display and len(new_display) and new_display != user_info['display']:
+        to_update['display'] = new_display
+    if new_description and len(new_description) and new_description != user_info['info']:
+        to_update['info'] = new_description
+    if db.update_user(username, to_update, flash):
+        flash('Successfully updated!')
+        if 'display' in to_update:
+            session['display'] = to_update['display']
+    return redirect(url_for('.settings'))
+
 
 @app.errorhandler(400)
 def error_bad_request(e):
@@ -336,4 +365,4 @@ if __name__ == "__main__":
         sslconfig = app.config['ssl']
         sslctx = ssl.SSLContext(protocol = ssl.PROTOCOL_SSLv23)
         sslctx.load_cert_chain(sslconfig['certfile'], sslconfig.get('keyfile'), sslconfig.get('password'))
-    app.run(host='0.0.0.0', port=app.config.get('port', 5000), ssl_context=sslctx)
+    app.run(host='0.0.0.0', port=app.config.get('port', 5000), debug=app.config.get('debug', False), ssl_context=sslctx)
